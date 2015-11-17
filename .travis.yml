@@ -2,33 +2,38 @@ language: python
 
 sudo: false
 
+python:
+  - 2.7
+  - 3.4
+  - 3.5
+
 env:
-    - TOX_ENV=py27-lint
-    - TOX_ENV=py27-docs
-    - TOX_ENV=py35-django19
-    - TOX_ENV=py34-django19
-    - TOX_ENV=py27-django19
-    - TOX_ENV=py34-django18
-    - TOX_ENV=py33-django18
-    - TOX_ENV=py32-django18
-    - TOX_ENV=py27-django18
-    - TOX_ENV=py34-django17
-    - TOX_ENV=py33-django17
-    - TOX_ENV=py32-django17
-    - TOX_ENV=py27-django17
+  - DJANGO=1.7
+  - DJANGO=1.8
+  - DJANGO==1.9rc1
+
+#    - TOX_ENV=py27-lint
+#    - TOX_ENV=py27-docs
 
 matrix:
-    # Python 3.5 not yet available on travis, watch this to see when it is.
   fast_finish: true
-  allow_failures:
-    - env: TOX_ENV=py35-django19
+  exclude:
+    - python: 3.5
+      env: DJANGO=1.7
 
 install:
-  - pip install tox
+  - pip install -U pip setuptools
+  - pip install -r requirements/requirements-testing.txt
+  - pip install flake8
+  - if [[ $DJANGO =~ = ]]; then
+    pip install --pre --quiet "Django=$DJANGO";
+    else
+    pip install --quiet "Django>=$DJANGO,<$DJANGO.99";
+    fi
 
 script:
-    - tox -e $TOX_ENV
+    - ./runtests.py --fast
 
-after_success:
-    - pip install codecov
-    - codecov -e TOX_ENV
+#after_success:
+#    - pip install codecov
+#    - codecov -e TOX_ENV
